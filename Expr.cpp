@@ -1,4 +1,7 @@
 #include "Expr.h"
+
+#include "ContextImpl.h"
+
 #include <ranges>
 
 namespace tgen {
@@ -40,13 +43,22 @@ void Expr::format_to(fmt::format_context &ctx) const {
   }
 }
 
+Expr *Expr::TrackExpression(Context &context, std::unique_ptr<Expr> expr) {
+  return dynamic_cast<Expr *>(ContextImpl::get(context).OtherValueTracker.
+    emplace(std::move(expr)).
+    first->get());
+}
+
 Value *ValueExpr::evalulateInContext(EvaluationScope &scope) {
   return SourceValue->evalulateInContext(scope);
 }
 
-Value *BinOpExpr::evalulateInContext(EvaluationScope &scope) {
-  auto lhs = Arguments[0]->evalulateInContext(scope);
-  auto rhs = Arguments[1]->evalulateInContext(scope);
+Value *IdentifierExpr::evalulateInContext(EvaluationScope &scope) {
+  return scope.evaluateIdentifier(Name);
+}
+
+void IdentifierExpr::format_to(fmt::format_context &ctx) const {
+  fmt::format_to(ctx.out(), "GetValue({})", Name);
 }
 
 } // tgen

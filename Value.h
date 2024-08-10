@@ -111,7 +111,7 @@ public:
   const uintmax_t Bits;
 
   BitsValue(BitsType *ty, const uintmax_t bits, Context &ctx) : Value(
-        ty, ctx), Bits(bits) {
+      ty, ctx), Bits(bits) {
   }
 
   void format_to(fmt::format_context &ctx) const override;
@@ -120,12 +120,21 @@ public:
 };
 
 class ClassDef : public Value {
+  std::string Name;
+  std::vector<Value *> ParameterValues;
+
 public:
-  ClassDef(ClassType *classTy, Context &ctx) :
-    Value(classTy, ctx) {
+  ClassDef(ClassType *classTy, Context &ctx, std::string name,
+           std::vector<Value *> parameterValues) :
+    Value(classTy, ctx), Name(std::move(name)),
+    ParameterValues(std::move(parameterValues)) {
   }
 
   void format_to(fmt::format_context &ctx) const override;
+
+  [[nodiscard]] static ClassDef *
+  getClassDef(ClassType *classTy, const std::string_view &name,
+              std::span<Value *> parameterInitializer);
 };
 
 } // tgen

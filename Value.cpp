@@ -92,4 +92,18 @@ void ClassDef::format_to(fmt::format_context &ctx) const {
   Value::format_to(ctx);
 }
 
+ClassDef *ClassDef::getClassDef(ClassType *classTy,
+                                const std::string_view &name,
+                                std::span<Value *> parameterInitializer) {
+  auto def = std::make_unique<ClassDef>(classTy,
+                                        classTy->getContext(),
+                                        std::string(name),
+                                        std::vector<Value *>(
+                                            parameterInitializer.begin(),
+                                            parameterInitializer.end()));
+  auto [insIter, insResult] = ContextImpl::get(classTy->getContext()).
+                              OtherValueTracker.insert(std::move(def));
+  return dynamic_cast<ClassDef *>(insIter->get());
+}
+
 } // tgen

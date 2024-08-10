@@ -81,11 +81,10 @@ public:
 
 struct ClassMember {
   Type *Ty = nullptr;
-  std::optional<std::string> Name;
+  std::string Name;
   Value *Initializer = nullptr;
 
-  ClassMember(Type *ty, std::optional<std::string> name,
-              Value *initializer) :
+  ClassMember(Type *ty, std::string name, Value *initializer) :
     Ty(ty), Name(std::move(name)), Initializer(initializer) {
   }
 

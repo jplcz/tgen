@@ -77,12 +77,7 @@ bool ListType::isOfType(Type *type) const {
 }
 
 void ClassMember::format_to(fmt::format_context &ctx) const {
-  fmt::format_to(ctx.out(), "{}", *Ty);
-  if (Name.has_value()) {
-    fmt::format_to(ctx.out(), " {}", *Name);
-  } else {
-    fmt::format_to(ctx.out(), "<Unnamed>");
-  }
+  fmt::format_to(ctx.out(), "{} {}", *Ty, Name);
   if (Initializer)
     fmt::format_to(ctx.out(), " = {}", *Initializer);
 }
@@ -95,7 +90,7 @@ void ClassParameterDecl::format_to(fmt::format_context &ctx) const {
     fmt::format_to(ctx.out(), " = {}", *Initializer);
 }
 
-ClassMember * ClassType::findMember(const std::string_view &name) const {
+ClassMember *ClassType::findMember(const std::string_view &name) const {
   for (const auto &p : Members) {
     if (p->Name == name) {
       return p.get();

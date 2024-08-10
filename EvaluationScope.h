@@ -23,6 +23,8 @@ public:
   Value *getValue(const std::string_view &name);
   void setValue(const std::string_view &name, Value *value);
 
+  Value *evaluateIdentifier(const std::string_view &name);
+
 private:
   Context &Ctx;
   EvaluationScope *Parent;

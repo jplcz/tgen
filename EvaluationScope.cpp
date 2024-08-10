@@ -15,4 +15,8 @@ void EvaluationScope::setValue(const std::string_view &name, Value *value) {
   Values[std::string(name)] = value;
 }
 
+Value *EvaluationScope::evaluateIdentifier(const std::string_view &name) {
+  return getValue(name);
+}
+
 }
