@@ -7,6 +7,8 @@
 
 namespace tgen {
 
+class EvaluationScope;
+
 class Value {
   Type *ValueType = nullptr;
   Context &Ctx;
@@ -22,10 +24,12 @@ public:
 
   [[nodiscard]] Context &getContext() const { return Ctx; }
 
-  virtual void format_to(fmt::format_context &ctx) const;
+  virtual auto format_to(fmt::format_context &ctx) const -> void;
+  [[nodiscard]] virtual bool isExpression() const { return false; }
+  [[nodiscard]] virtual Value *evalulateInContext(EvaluationScope &scope);
 };
 
-class IntegerValue : public Value {
+class IntegerValue final : public Value {
 public:
   using IntegerTy = std::intmax_t;
 
@@ -38,9 +42,10 @@ public:
   void format_to(fmt::format_context &ctx) const override;
 
   static IntegerValue *getIntegerValue(IntegerTy numericValue, Context &ctx);
+  Value *evalulateInContext(EvaluationScope &scope) override;
 };
 
-class BitValue : public Value {
+class BitValue final : public Value {
 public:
   const bool Bit;
 
@@ -51,9 +56,10 @@ public:
   void format_to(fmt::format_context &ctx) const override;
 
   static BitValue *getBitValue(bool bitValue, Context &ctx);
+  Value *evalulateInContext(EvaluationScope &scope) override;
 };
 
-class StringValue : public Value {
+class StringValue final : public Value {
 public:
   const std::string String;
 
@@ -64,14 +70,15 @@ public:
   void format_to(fmt::format_context &ctx) const override;
 
   static StringValue *getStringValue(const std::string_view &str, Context &ctx);
+  Value *evalulateInContext(EvaluationScope &scope) override;
 };
 
-class ListValue : public Value {
+class ListValue final : public Value {
   const std::vector<Value *> Values;
 
 public:
   ListValue(Type *elementTy, std::vector<Value *> values, Context &ctx) :
-    Value(elementTy, ctx), Values(std::move(values)) {
+    Value(ListType::getListType(elementTy), ctx), Values(std::move(values)) {
     for (const auto &item : Values) {
       if (!item->getType()->isOfType(elementTy))
         throw std::runtime_error{"Invalid types"};
@@ -89,6 +96,27 @@ public:
   void format_to(fmt::format_context &ctx) const override;
 
   static ListValue *getListValue(Type *elementTy, std::span<Value *> values);
+
+  template <typename... Args>
+  static ListValue *getListValueFromInit(Type *elementTy, Args &&... args) {
+    std::vector<Value *> vec{{args...}};
+    return getListValue(elementTy, vec);
+  }
+
+  Value *evalulateInContext(EvaluationScope &scope) override;
+};
+
+class BitsValue : public Value {
+public:
+  const uintmax_t Bits;
+
+  BitsValue(BitsType *ty, const uintmax_t bits, Context &ctx) : Value(
+        ty, ctx), Bits(bits) {
+  }
+
+  void format_to(fmt::format_context &ctx) const override;
+
+  static BitValue *getBitValue(BitsType *ty, uintmax_t bits);
 };
 
 class ClassDef : public Value {

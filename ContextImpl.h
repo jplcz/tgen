@@ -12,7 +12,7 @@ namespace tgen {
 
 class ContextImpl final : public Context {
 public:
-  Type IntTy, BitTy, StringTy;
+  Type IntTy, BitTy, StringTy, VoidTy;
 
   std::map<Type *, std::unique_ptr<ListType>> ListTypes;
   std::map<std::string, std::unique_ptr<ClassType>, std::less<>> ClassTypes;
@@ -29,6 +29,8 @@ public:
   BitValue FalseValue;
   StringValue EmptyString;
 
+  std::map<unsigned int, std::unique_ptr<BitsType>> BitsTypes;
+
   ContextImpl();
   ~ContextImpl() override;
 
@@ -41,6 +43,8 @@ public:
   IntegerValue *getIntegerV(IntegerValue::IntegerTy val);
   StringValue *getStringV(const std::string_view &value);
   ListValue *getListValue(Type *elementTy, std::span<Value *> values);
+  BitsType *getBitsTy(unsigned int width);
+
 };
 
 } // tgen

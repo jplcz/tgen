@@ -10,6 +10,11 @@ void Value::format_to(fmt::format_context &ctx) const {
   fmt::format_to(ctx.out(), "Val:{}", *ValueType);
 }
 
+Value *Value::evalulateInContext(EvaluationScope &) {
+  throw std::runtime_error(
+      "Value can't be evaludated");
+}
+
 void IntegerValue::format_to(fmt::format_context &ctx) const {
   fmt::format_to(ctx.out(), "{}:{}", *getType(), NumericValue);
 }
@@ -17,6 +22,10 @@ void IntegerValue::format_to(fmt::format_context &ctx) const {
 IntegerValue *IntegerValue::getIntegerValue(const IntegerTy numericValue,
                                             Context &ctx) {
   return ContextImpl::get(ctx).getIntegerV(numericValue);
+}
+
+Value *IntegerValue::evalulateInContext(EvaluationScope &) {
+  return this;
 }
 
 void BitValue::format_to(fmt::format_context &ctx) const {
@@ -28,6 +37,10 @@ BitValue *BitValue::getBitValue(const bool bitValue, Context &ctx) {
   return bitValue ? &ctxRef.TrueValue : &ctxRef.FalseValue;
 }
 
+Value *BitValue::evalulateInContext(EvaluationScope &) {
+  return this;
+}
+
 void StringValue::format_to(fmt::format_context &ctx) const {
   fmt::format_to(ctx.out(), "{}:\"{}\"", *getType(), String);
 }
@@ -35,6 +48,10 @@ void StringValue::format_to(fmt::format_context &ctx) const {
 StringValue *StringValue::getStringValue(const std::string_view &str,
                                          Context &ctx) {
   return ContextImpl::get(ctx).getStringV(str);
+}
+
+Value *StringValue::evalulateInContext(EvaluationScope &) {
+  return this;
 }
 
 void ListValue::format_to(fmt::format_context &ctx) const {
@@ -61,6 +78,14 @@ ListValue *ListValue::getListValue(Type *elementTy,
                                    const std::span<Value *> values) {
   return ContextImpl::get(elementTy->getContext()).getListValue(
       elementTy, values);
+}
+
+Value *ListValue::evalulateInContext(EvaluationScope &) {
+  return this;
+}
+
+void BitsValue::format_to(fmt::format_context &ctx) const {
+  fmt::format_to(ctx.out(), "{}:{:#x}", *getType(), Bits);
 }
 
 void ClassDef::format_to(fmt::format_context &ctx) const {

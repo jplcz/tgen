@@ -1,5 +1,6 @@
 #ifndef TGEN_CONTEXT_H
 #define TGEN_CONTEXT_H
+
 #include <memory>
 
 namespace tgen {

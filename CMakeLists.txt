@@ -16,6 +16,10 @@ add_executable(tgen main.cpp
         ContextImpl.cpp
         ContextImpl.h
         Value.cpp
-        Value.h)
+        Value.h
+        EvaluationScope.cpp
+        EvaluationScope.h
+        Expr.cpp
+        Expr.h)
 
 target_link_libraries(tgen PRIVATE spdlog::spdlog)

@@ -2,7 +2,6 @@
 #define TGEN_TYPE_H
 
 #include "Context.h"
-#include "spdlog/fmt/bundled/core.h"
 
 #include <spdlog/spdlog.h>
 #include <map>
@@ -56,6 +55,7 @@ public:
   static Type *getIntTy(Context &context);
   static Type *getStringTy(Context &context);
   static Type *getBitTy(Context &context);
+  static Type *getVoidTy(Context &context);
 
   virtual void format_to(fmt::format_context &ctx) const;
 
@@ -80,9 +80,14 @@ public:
 };
 
 struct ClassMember {
-  std::optional<std::string> Name;
   Type *Ty = nullptr;
+  std::optional<std::string> Name;
   Value *Initializer = nullptr;
+
+  ClassMember(Type *ty, std::optional<std::string> name,
+              Value *initializer) :
+    Ty(ty), Name(std::move(name)), Initializer(initializer) {
+  }
 
   void format_to(fmt::format_context &ctx) const;
 };
@@ -92,14 +97,19 @@ struct ClassParameterDecl {
   std::optional<std::string> Name;
   Value *Initializer = nullptr;
 
+  ClassParameterDecl(Type *ty, std::optional<std::string> name,
+                     Value *initializer) :
+    Ty(ty), Name(std::move(name)), Initializer(initializer) {
+  }
+
   void format_to(fmt::format_context &ctx) const;
 };
 
 class ClassType : public Type {
 private:
   std::string Name;
-  std::vector<ClassMember> Members;
-  std::vector<ClassParameterDecl> Parameters;
+  std::vector<std::unique_ptr<ClassMember>> Members;
+  std::vector<std::unique_ptr<ClassParameterDecl>> Parameters;
   bool IsDefined = false;
   bool IsParametrized = false;
   ClassType *ParentTy = nullptr;
@@ -137,10 +147,51 @@ public:
     ParentTy = newParent;
   }
 
+  [[nodiscard]] ClassParameterDecl *findParameterDecl(
+      const std::string_view &decl) const {
+    std::size_t nest = 0;
+    for (auto self = this; self; self = self->ParentTy) {
+      ++nest;
+      if (nest > 100)
+        throw std::runtime_error{"Too many types in hierarchy"};
+      for (const auto &p : self->Parameters) {
+        if (p->Name == decl) {
+          return p.get();
+        }
+      }
+    }
+    return nullptr;
+  }
+
+  void addParameterDecl(const ClassParameterDecl &decl) {
+    Parameters.emplace_back(std::make_unique<ClassParameterDecl>(decl));
+  }
+
+  [[nodiscard]] ClassMember *findMember(
+      const std::string_view &name) const;
+
+  void addMember(const ClassMember &member) {
+    Members.emplace_back(std::make_unique<ClassMember>(member));
+  }
+
   static ClassType *getClassType(const std::string_view &name, Context &ctx);
 
   void format_to(fmt::format_context &ctx) const override;
   bool isOfType(Type *type) const override;
+};
+
+class BitsType : public Type {
+public:
+  unsigned int Width;
+
+  BitsType(const unsigned int width, Context &ctx) : Type(TypeID::Bits, ctx),
+    Width(width) {
+  }
+
+  void format_to(fmt::format_context &ctx) const override;
+  bool isOfType(Type *type) const override;
+
+  static BitsType *getBitsType(unsigned int width, Context &ctx);
 };
 
 } // tgen

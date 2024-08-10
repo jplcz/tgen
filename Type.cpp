@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "ContextImpl.h"
 #include "Value.h"
+#include <ranges>
 
 namespace tgen {
 
@@ -39,6 +40,10 @@ Type *Type::getBitTy(Context &context) {
   return &ContextImpl::get(context).BitTy;
 }
 
+Type *Type::getVoidTy(Context &context) {
+  return &ContextImpl::get(context).VoidTy;
+}
+
 void Type::format_to(fmt::format_context &ctx) const {
   fmt::format_to(ctx.out(), "{}", CodeName(getTypeID()));
 }
@@ -61,7 +66,7 @@ ListType *ListType::getListType(Type *elType) {
 ListType::~ListType() = default;
 
 void ListType::format_to(fmt::format_context &ctx) const {
-  fmt::format_to(ctx.out(), "[{}]", *ElementType);
+  fmt::format_to(ctx.out(), "list<{}>", *ElementType);
 }
 
 bool ListType::isOfType(Type *type) const {
@@ -90,6 +95,17 @@ void ClassParameterDecl::format_to(fmt::format_context &ctx) const {
     fmt::format_to(ctx.out(), " = {}", *Initializer);
 }
 
+ClassMember * ClassType::findMember(const std::string_view &name) const {
+  for (const auto &p : Members) {
+    if (p->Name == name) {
+      return p.get();
+    }
+  }
+  if (ParentTy)
+    return ParentTy->findMember(name);
+  return nullptr;
+}
+
 ClassType *ClassType::getClassType(const std::string_view &name, Context &ctx) {
   return ContextImpl::get(ctx).getClassTy(name);
 }
@@ -99,10 +115,19 @@ ClassType::~ClassType() = default;
 void ClassType::format_to(fmt::format_context &ctx) const {
   fmt::format_to(ctx.out(), "Class:{}", Name);
   if (isParametrized()) {
-    fmt::format_to(ctx.out(), "<{}>", fmt::join(Parameters, ", "));
+    fmt::format_to(ctx.out(), "<{}>",
+                   fmt::join(
+                       Parameters | std::views::transform(
+                           [](const auto &ptr) -> decltype(auto) {
+                             return *ptr;
+                           }), ", "));
   }
   if (IsDefined) {
-    fmt::format_to(ctx.out(), " {{ {} }}", fmt::join(Members, ", "));
+    fmt::format_to(ctx.out(), " {{ {} }}", fmt::join(
+                       Members | std::views::transform(
+                           [](const auto &ptr) -> decltype(auto) {
+                             return *ptr;
+                           }), ", "));
   }
 }
 
@@ -114,6 +139,19 @@ bool ClassType::isOfType(Type *type) const {
   if (!ParentTy)
     return false;
   return ParentTy->isOfType(type);
+}
+
+void BitsType::format_to(fmt::format_context &ctx) const {
+  fmt::format_to(ctx.out(), "bits<{}>", Width);
+}
+
+bool BitsType::isOfType(Type *type) const {
+  return type->getTypeID() == TypeID::Bits &&
+         dynamic_cast<BitsType *>(type)->Width == Width;
+}
+
+BitsType *BitsType::getBitsType(const unsigned int width, Context &ctx) {
+  return ContextImpl::get(ctx).getBitsTy(width);
 }
 
 } // tgen

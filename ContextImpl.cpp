@@ -6,6 +6,7 @@ namespace tgen {
 ContextImpl::ContextImpl(): IntTy(Type::TypeID::Int, *this),
                             BitTy(Type::TypeID::Bit, *this),
                             StringTy(Type::TypeID::String, *this),
+                            VoidTy(Type::TypeID::Void, *this),
                             TrueValue(true, *this),
                             FalseValue(false, *this),
                             EmptyString({}, *this) {
@@ -74,6 +75,16 @@ ListValue *ContextImpl::getListValue(Type *elementTy,
           *this));
 
   return dynamic_cast<ListValue *>(insIter->get());
+}
+
+BitsType *ContextImpl::getBitsTy(unsigned int width) {
+  auto it = BitsTypes.find(width);
+  if (it == BitsTypes.end()) {
+    auto [insInter, inserted] = BitsTypes.emplace(
+        width, std::make_unique<BitsType>(width, *this));
+    return insInter->second.get();
+  }
+  return it->second.get();
 }
 
 } // tgen
