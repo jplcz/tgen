@@ -36,12 +36,8 @@ int main() {
                       tgen::StringValue::getStringValue("M8", *ctx)
                       ));
 
-  std::array<tgen::Value *, 1> params{};
-  params[0] = tgen::BitsValue::getBitValue();
-
   auto InstFormatPseudo = tgen::ClassDef::getClassDef(
-      instFormat, "InstFormatPseudo",
-      params);
+      instFormat, "InstFormatPseudo", {});
 
   scope->setValue("InstFormatPseudo",
                   InstFormatPseudo);
