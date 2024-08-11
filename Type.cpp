@@ -73,7 +73,7 @@ bool ListType::isOfType(Type *type) const {
   if (type->getTypeID() != TypeID::List)
     return false;
   return ElementType->
-      isOfType(dynamic_cast<ListType *>(type)->getElementType());
+      isOfType(must_cast<ListType *>(type)->getElementType());
 }
 
 void ClassMember::format_to(fmt::format_context &ctx) const {
@@ -142,7 +142,7 @@ void BitsType::format_to(fmt::format_context &ctx) const {
 
 bool BitsType::isOfType(Type *type) const {
   return type->getTypeID() == TypeID::Bits &&
-         dynamic_cast<BitsType *>(type)->Width == Width;
+         must_cast<BitsType *>(type)->Width == Width;
 }
 
 BitsType *BitsType::getBitsType(const unsigned int width, Context &ctx) {

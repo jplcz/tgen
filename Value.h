@@ -108,15 +108,17 @@ public:
 
 class BitsValue : public Value {
 public:
-  const uintmax_t Bits;
+  using BitsT = uintmax_t;
 
-  BitsValue(BitsType *ty, const uintmax_t bits, Context &ctx) : Value(
+  const BitsT Bits;
+
+  BitsValue(BitsType *ty, const BitsT bits, Context &ctx) : Value(
       ty, ctx), Bits(bits) {
   }
 
   void format_to(fmt::format_context &ctx) const override;
 
-  static BitValue *getBitValue(BitsType *ty, uintmax_t bits);
+  static BitsValue *getBitsValue(BitsType *ty, BitsT bits);
 };
 
 class ClassDef : public Value {

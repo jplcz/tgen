@@ -2,6 +2,7 @@
 #define TGEN_TYPE_H
 
 #include "Context.h"
+#include "TypeCasting.h"
 
 #include <spdlog/spdlog.h>
 #include <map>

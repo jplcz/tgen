@@ -1,5 +1,6 @@
 #include "ContextImpl.h"
 #include "Type.h"
+#include "TypeCasting.h"
 
 namespace tgen {
 
@@ -74,7 +75,7 @@ ListValue *ContextImpl::getListValue(Type *elementTy,
           elementTy, std::vector<Value *>(values.begin(), values.end()),
           *this));
 
-  return dynamic_cast<ListValue *>(insIter->get());
+  return must_cast<ListValue *>(insIter->get());
 }
 
 BitsType *ContextImpl::getBitsTy(unsigned int width) {
@@ -85,6 +86,15 @@ BitsType *ContextImpl::getBitsTy(unsigned int width) {
     return insInter->second.get();
   }
   return it->second.get();
+}
+
+BitsValue *ContextImpl::getBitsValue(BitsType *ty, BitsValue::BitsT value) {
+  const auto key = std::make_tuple(ty, value);
+  if (const auto it = BitsValues.find(key); it != BitsValues.end())
+    return it->second.get();
+  auto [insIter, inserted] = BitsValues.emplace(key,
+      std::make_unique<BitsValue>(ty, value, *this));
+  return insIter->second.get();
 }
 
 } // tgen

@@ -20,6 +20,9 @@ add_executable(tgen main.cpp
         EvaluationScope.cpp
         EvaluationScope.h
         Expr.cpp
-        Expr.h)
+        Expr.h
+        ValueCast.cpp
+        ValueCast.h
+        TypeCasting.h)
 
 target_link_libraries(tgen PRIVATE spdlog::spdlog)

@@ -3,6 +3,7 @@
 
 #include "Context.h"
 #include "Type.h"
+#include "TypeCasting.h"
 #include "Value.h"
 #include <map>
 #include <memory>
@@ -30,12 +31,13 @@ public:
   StringValue EmptyString;
 
   std::map<unsigned int, std::unique_ptr<BitsType>> BitsTypes;
+  std::map<std::tuple<BitsType *, BitsValue::BitsT>, std::unique_ptr<BitsValue>> BitsValues;
 
   ContextImpl();
   ~ContextImpl() override;
 
   static ContextImpl &get(Context &context) {
-    return dynamic_cast<ContextImpl &>(context);
+    return *must_cast<ContextImpl *>(&context);
   }
 
   ListType *getListTy(Type *elType);
@@ -44,7 +46,7 @@ public:
   StringValue *getStringV(const std::string_view &value);
   ListValue *getListValue(Type *elementTy, std::span<Value *> values);
   BitsType *getBitsTy(unsigned int width);
-
+  BitsValue * getBitsValue(BitsType * ty, BitsValue::BitsT value);
 };
 
 } // tgen

@@ -7,4 +7,5 @@ TGEN_TYPE(2, String, true)
 TGEN_TYPE(3, List, false)
 TGEN_TYPE(4, Class, false)
 TGEN_TYPE(5, Bits, true)
-TGEN_TYPE(6, Void, true)
+// Any type
+TGEN_TYPE(6, Void, false)

@@ -44,7 +44,7 @@ void Expr::format_to(fmt::format_context &ctx) const {
 }
 
 Expr *Expr::TrackExpression(Context &context, std::unique_ptr<Expr> expr) {
-  return dynamic_cast<Expr *>(ContextImpl::get(context).OtherValueTracker.
+  return must_cast<Expr *>(ContextImpl::get(context).OtherValueTracker.
     emplace(std::move(expr)).
     first->get());
 }

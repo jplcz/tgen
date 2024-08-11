@@ -88,6 +88,10 @@ void BitsValue::format_to(fmt::format_context &ctx) const {
   fmt::format_to(ctx.out(), "{}:{:#x}", *getType(), Bits);
 }
 
+BitsValue * BitsValue::getBitsValue(BitsType *ty, BitsT bits) {
+  return ContextImpl::get(ty->getContext()).getBitsValue(ty, bits);
+}
+
 void ClassDef::format_to(fmt::format_context &ctx) const {
   Value::format_to(ctx);
 }
@@ -103,7 +107,7 @@ ClassDef *ClassDef::getClassDef(ClassType *classTy,
                                             parameterInitializer.end()));
   auto [insIter, insResult] = ContextImpl::get(classTy->getContext()).
                               OtherValueTracker.insert(std::move(def));
-  return dynamic_cast<ClassDef *>(insIter->get());
+  return must_cast<ClassDef *>(insIter->get());
 }
 
 } // tgen
